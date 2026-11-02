@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{test_app.py,migrations/**,outputs/**,industrialshield.db,__pycache__/**}"
+    }
+  }
+}

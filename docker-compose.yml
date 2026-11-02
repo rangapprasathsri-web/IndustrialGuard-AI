@@ -1,0 +1,38 @@
+services:
+  industrialshield:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-industrialshield}:${POSTGRES_PASSWORD:-industrialshield}@postgres:5432/${POSTGRES_DB:-industrialshield}
+      REDIS_URL: redis://redis:6379/0
+      INDUSTRIALSHIELD_DEMO_EMAIL: ${INDUSTRIALSHIELD_DEMO_EMAIL:-admin@industrialshield.demo}
+      INDUSTRIALSHIELD_DEMO_PASSWORD: ${INDUSTRIALSHIELD_DEMO_PASSWORD:-ChangeMe-For-Deployment}
+      INDUSTRIALSHIELD_SECRET: ${INDUSTRIALSHIELD_SECRET:-local-demo-secret-change-me}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-industrialshield}
+      POSTGRES_USER: ${POSTGRES_USER:-industrialshield}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-industrialshield}
+    volumes:
+      - industrialshield-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U industrialshield -d industrialshield"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - industrialshield-redis:/data
+volumes:
+  industrialshield-postgres:
+  industrialshield-redis:
